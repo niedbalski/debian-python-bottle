@@ -13,6 +13,8 @@ Build-Depends-Indep:
  , python-cherrypy
  , python-gevent
  , python-mako
+ , python-eventlet
+ , python-paste
 # , gunicorn
 # , python-tornado
 Standards-Version: 3.9.2
