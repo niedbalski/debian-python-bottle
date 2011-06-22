@@ -1,3 +1,10 @@
+python-bottle (0.9.4-1) unstable; urgency=low
+
+  * New upstream version
+  * DM-Upload-Allowed added
+
+ -- Federico Ceratto <federico.ceratto@gmail.com>  Wed, 22 Jun 2011 22:04:47 +0000
+
 python-bottle (0.9.1-1) unstable; urgency=low
 
   * New upstream version
