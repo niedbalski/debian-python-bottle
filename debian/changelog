@@ -1,8 +1,13 @@
-python-bottle (0.9.1-2) UNRELEASED; urgency=low
+python-bottle (0.9.4-1) UNRELEASED; urgency=low
 
+  [ David Paleino ]
   * Added python-{paste,eventlet} B-D to feed the testsuite
 
- -- David Paleino <dapal@debian.org>  Fri, 13 May 2011 18:35:55 +0200
+  [ Federico Ceratto ]
+  * New upstream version
+  * DM-Upload-Allowed added
+
+ -- Federico Ceratto <federico.ceratto@gmail.com>  Wed, 22 Jun 2011 22:04:47 +0000
 
 python-bottle (0.9.1-1) unstable; urgency=low
 

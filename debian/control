@@ -3,6 +3,7 @@ Section: python
 Priority: optional
 Maintainer: David Paleino <dapal@debian.org>
 Uploaders: Federico Ceratto <federico.ceratto@gmail.com>
+DM-Upload-Allowed: yes
 Build-Depends:
  debhelper (>= 7.0.50~)
 Build-Depends-Indep:
