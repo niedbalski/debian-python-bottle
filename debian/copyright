@@ -1,4 +1,4 @@
-Format-Specification: http://dep.debian.net/deps/dep5/
+Format: http://dep.debian.net/deps/dep5/
 
 Files: debian/*
 Copyright: © 2009-2011, David Paleino <dapal@debian.org>
