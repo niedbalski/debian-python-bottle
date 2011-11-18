@@ -1,3 +1,13 @@
+python-bottle (0.9.7-1) unstable; urgency=low
+
+  * New upstream version
+  * debian/control:
+    - bumped to debhelper 8
+    - dependency to python-all added
+  * debian/copyright updated
+
+ -- Federico Ceratto <federico.ceratto@gmail.com>  Fri, 18 Nov 2011 21:34:34 +0000
+
 python-bottle (0.9.5-2) unstable; urgency=low
 
   * Testsuite disabled at build-time (Closes: #640266)
