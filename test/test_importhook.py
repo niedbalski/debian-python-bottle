@@ -1,10 +1,9 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import unittest
 import sys, os
 import imp
 
 class TestImportHooks(unittest.TestCase):
-    server = 'wsgiref'
 
     def make_module(self, name, **args):
         mod = sys.modules.setdefault(name, imp.new_module(name))
