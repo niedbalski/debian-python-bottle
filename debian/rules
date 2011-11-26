@@ -31,6 +31,10 @@ override_dh_auto_clean:
 	dh_auto_clean -Spython_distutils
 	$(MAKE) -C docs clean
 
+override_dh_installchangelogs:
+	dh_installchangelogs docs/changelog.rst
+
+
 %:
 	dh $@ \
 		--with python2
