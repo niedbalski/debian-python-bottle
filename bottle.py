@@ -16,7 +16,7 @@ License: MIT (see LICENSE.txt for details)
 from __future__ import with_statement
 
 __author__ = 'Marcel Hellkamp'
-__version__ = '0.10.1'
+__version__ = '0.10.2'
 __license__ = 'MIT'
 
 # The gevent server adapter needs to patch some modules before they are imported
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     _opt("--version", action="store_true", help="show version number.")
     _opt("-b", "--bind", metavar="ADDRESS", help="bind socket to ADDRESS.")
     _opt("-s", "--server", default='wsgiref', help="use SERVER as backend.")
-    _opt("-p", "--plugin", action="append", help="install additinal plugin/s.")
+    _opt("-p", "--plugin", action="append", help="install additional plugin/s.")
     _opt("--debug", action="store_true", help="start server in debug mode.")
     _opt("--reload", action="store_true", help="auto-reload on file changes.")
     _cmd_options, _cmd_args = _cmd_parser.parse_args()
@@ -2905,7 +2905,9 @@ if __name__ == '__main__':
     if opt.version:
         print 'Bottle', __version__; sys.exit(0)
     if not args:
-        parser.error('No application specified.')
+        parser.print_help()
+        print '\nError: No application specified.\n'
+        sys.exit(1)
 
     try:
         sys.path.insert(0, '.')
