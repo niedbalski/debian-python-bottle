@@ -1,8 +1,8 @@
-python-bottle (0.10.2-1) UNRELEASED; urgency=low
+python-bottle (0.10.2-1) unstable; urgency=low
 
   * New upstream version
 
- -- David Paleino <dapal@debian.org>  Sun, 04 Dec 2011 18:50:16 +0100
+ -- David Paleino <dapal@debian.org>  Sun, 04 Dec 2011 18:52:27 +0100
 
 python-bottle (0.10.1-1) unstable; urgency=low
 
