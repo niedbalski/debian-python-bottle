@@ -1,3 +1,9 @@
+python-bottle (0.10.6-1) UNRELEASED; urgency=low
+
+  * New upstream version
+
+ -- Federico Ceratto <federico.ceratto@gmail.com>  Thu, 22 Dec 2011 21:42:21 +0000
+
 python-bottle (0.10.2-1) unstable; urgency=low
 
   * New upstream version
