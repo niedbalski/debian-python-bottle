@@ -16,7 +16,7 @@ License: MIT (see LICENSE.txt for details)
 from __future__ import with_statement
 
 __author__ = 'Marcel Hellkamp'
-__version__ = '0.10.2'
+__version__ = '0.10.6'
 __license__ = 'MIT'
 
 # The gevent server adapter needs to patch some modules before they are imported
@@ -233,7 +233,7 @@ class HTTPError(HTTPResponse):
         self.traceback = traceback
 
     def __repr__(self):
-        return template(ERROR_PAGE_TEMPLATE, e=self)
+        return tonat(template(ERROR_PAGE_TEMPLATE, e=self))
 
 
 
@@ -289,7 +289,7 @@ class Router(object):
         #: If true, static routes are no longer checked first.
         self.strict_order = strict
         self.filters = {'re': self.re_filter, 'int': self.int_filter,
-                        'float': self.re_filter, 'path': self.path_filter}
+                        'float': self.float_filter, 'path': self.path_filter}
 
     def re_filter(self, conf):
         return conf or self.default_pattern, None, None
@@ -298,7 +298,7 @@ class Router(object):
         return r'-?\d+', int, lambda x: str(int(x))
 
     def float_filter(self, conf):
-        return r'-?\d*\.\d+', float, lambda x: str(float(x))
+        return r'-?[\d.]+', float, lambda x: str(float(x))
 
     def path_filter(self, conf):
         return r'.*?', None, None
@@ -834,12 +834,14 @@ class Bottle(object):
         except Exception, e:
             if not self.catchall: raise
             err = '<h1>Critical error while processing request: %s</h1>' \
-                  % environ.get('PATH_INFO', '/')
+                  % html_escape(environ.get('PATH_INFO', '/'))
             if DEBUG:
-                err += '<h2>Error:</h2>\n<pre>%s</pre>\n' % repr(e)
-                err += '<h2>Traceback:</h2>\n<pre>%s</pre>\n' % format_exc(10)
-            environ['wsgi.errors'].write(err) #TODO: wsgi.error should not get html
-            start_response('500 INTERNAL SERVER ERROR', [('Content-Type', 'text/html')])
+                err += '<h2>Error:</h2>\n<pre>\n%s\n</pre>\n' \
+                       '<h2>Traceback:</h2>\n<pre>\n%s\n</pre>\n' \
+                       % (html_escape(repr(e)), html_escape(format_exc(10)))
+            environ['wsgi.errors'].write(err)
+            headers = [('Content-Type', 'text/html; charset=UTF-8')]
+            start_response('500 INTERNAL SERVER ERROR', headers)
             return [tob(err)]
 
     def __call__(self, environ, start_response):
