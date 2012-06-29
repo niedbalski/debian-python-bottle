@@ -16,7 +16,7 @@ License: MIT (see LICENSE.txt for details)
 from __future__ import with_statement
 
 __author__ = 'Marcel Hellkamp'
-__version__ = '0.10.9'
+__version__ = '0.10.11'
 __license__ = 'MIT'
 
 # The gevent server adapter needs to patch some modules before they are imported
@@ -70,10 +70,6 @@ try: from collections import MutableMapping as DictMixin
 except ImportError: # pragma: no cover
     from UserDict import DictMixin
 
-try: from urlparse import parse_qsl
-except ImportError: # pragma: no cover
-    from cgi import parse_qsl
-
 try: import cPickle as pickle
 except ImportError: # pragma: no cover
     import pickle
@@ -88,7 +84,8 @@ except ImportError: # pragma: no cover
                 raise ImportError("JSON support requires Python 2.6 or simplejson.")
             json_lds = json_dumps
 
-py3k = sys.version_info >= (3,0,0)
+py = sys.version_info
+py3k = py >= (3,0,0)
 NCTextIOWrapper = None
 
 if sys.version_info < (2,6,0):
@@ -97,6 +94,7 @@ if sys.version_info < (2,6,0):
 
 if py3k: # pragma: no cover
     json_loads = lambda s: json_lds(touni(s))
+    urlunquote = functools.partial(urlunquote, encoding='latin1')
     # See Request.POST
     from io import BytesIO
     def touni(x, enc='utf8', err='strict'):
@@ -127,6 +125,15 @@ def try_update_wrapper(wrapper, wrapped, *a, **ka):
     try: # Bug: functools breaks if wrapper is an instane method
         functools.update_wrapper(wrapper, wrapped, *a, **ka)
     except AttributeError: pass
+
+# 3.2 fixes cgi.FieldStorage to accept bytes (which makes a lot of sense).
+#     but defaults to utf-8 (which is not always true)
+# 3.1 needs a workaround.
+NCTextIOWrapper = None
+if (3,0,0) < py < (3,2,0):
+    from io import TextIOWrapper
+    class NCTextIOWrapper(TextIOWrapper):
+        def close(self): pass # Keep wrapped buffer open.
 
 # Backward compatibility
 def depr(message):
@@ -920,8 +927,8 @@ class BaseRequest(DictMixin):
             values are sometimes called "URL arguments" or "GET parameters", but
             not to be confused with "URL wildcards" as they are provided by the
             :class:`Router`. '''
-        pairs = parse_qsl(self.query_string, keep_blank_values=True)
         get = self.environ['bottle.get'] = FormsDict()
+        pairs = _parse_qsl(self.environ.get('QUERY_STRING', ''))
         for key, value in pairs[:self.MAX_PARAMS]:
             get[key] = value
         return get
@@ -1017,14 +1024,25 @@ class BaseRequest(DictMixin):
             instances of :class:`cgi.FieldStorage` (file uploads).
         """
         post = FormsDict()
+        # We default to application/x-www-form-urlencoded for everything that
+        # is not multipart and take the fast path (also: 3.1 workaround)
+        if not self.content_type.startswith('multipart/'):
+            maxlen = max(0, min(self.content_length, self.MEMFILE_MAX))
+            pairs = _parse_qsl(tonat(self.body.read(maxlen), 'latin1'))
+            for key, value in pairs[:self.MAX_PARAMS]:
+                post[key] = value
+            return post
+
         safe_env = {'QUERY_STRING':''} # Build a safe environment for cgi
         for key in ('REQUEST_METHOD', 'CONTENT_TYPE', 'CONTENT_LENGTH'):
             if key in self.environ: safe_env[key] = self.environ[key]
+        args = dict(fp=self.body, environ=safe_env, keep_blank_values=True)
+        if py >= (3,2,0):
+            args['encoding'] = 'ISO-8859-1'
         if NCTextIOWrapper:
-            fb = NCTextIOWrapper(self.body, encoding='ISO-8859-1', newline='\n')
-        else:
-            fb = self.body
-        data = cgi.FieldStorage(fp=fb, environ=safe_env, keep_blank_values=True)
+            args['fp'] = NCTextIOWrapper(args['fp'], encoding='ISO-8859-1',
+                                         newline='\n')
+        data = cgi.FieldStorage(**args)
         for item in (data.list or [])[:self.MAX_PARAMS]:
             post[item.name] = item if item.filename else item.value
         return post
@@ -1097,6 +1115,11 @@ class BaseRequest(DictMixin):
             set this header. Otherwise, the real length of the body is unknown
             and -1 is returned. In this case, :attr:`body` will be empty. '''
         return int(self.environ.get('CONTENT_LENGTH') or -1)
+
+    @property
+    def content_type(self):
+        ''' The Content-Type header as a lowercase-string (default: empty). '''
+        return self.environ.get('CONTENT_TYPE', '').lower()
 
     @property
     def is_xhr(self):
@@ -1893,6 +1916,18 @@ def parse_auth(header):
             return user, pwd
     except (KeyError, ValueError):
         return None
+
+
+def _parse_qsl(qs):
+    r = []
+    for pair in qs.replace(';','&').split('&'):
+        if not pair: continue
+        nv = pair.split('=', 1)
+        if len(nv) != 2: nv.append('')
+        key = urlunquote(nv[0].replace('+', ' '))
+        value = urlunquote(nv[1].replace('+', ' '))
+        r.append((key, value))
+    return r
 
 
 def _lscmp(a, b):
