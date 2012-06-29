@@ -1,3 +1,11 @@
+python-bottle (0.10.11-1) UNRELEASED; urgency=low
+
+  * New upstream version
+  * Homepage updated (Closes: #671230)
+  * Standard-Version bumped to 3.9.3, debhelper version bumped to 9
+
+ -- Federico Ceratto <federico.ceratto@gmail.com>  Fri, 29 Jun 2012 22:20:57 +0100
+
 python-bottle (0.10.9-1) unstable; urgency=low
 
   * New upstream version
