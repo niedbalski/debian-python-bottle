@@ -5,6 +5,27 @@
 Release Notes and Changelog
 ===========================
 
+Release 0.11
+==============
+
+.. warning: Not released yet.
+
+* Native support for Python 2.x and 3.x syntax. No need to run 2to3 anymore.
+* Support for partial downloads (``Range`` header) in :func:`static_file`.
+* The new :class:`ResourceManager` interface helps locating files bundled with an application.
+* Added a server adapter for `waitress <http://docs.pylonsproject.org/projects/waitress/en/latest/>`_.
+* New :meth:`Bottle.merge` method to install all routes from one application into another.
+* New :attr:`BaseRequest.app` property to get the application object that handles a request.
+* Added :meth:`FormsDict.decode()` to get an all-unicode version (needed by WTForms).
+* :class:`MultiDict` and subclasses are now pickle-able.
+
+.. rubric:: API Changes
+
+* :attr:`Response.status` is a read-write property that can be assigned either a numeric status code or a status string with a reason phrase (``200 OK``). The return value is now a string to better match existing APIs (WebOb, werkzeug). To be absolutely clear, you can use the read-only properties :attr:`BaseResponse.status_code` and :attr:`BaseResponse.status_line`.
+
+.. rubric:: API Deprecations
+
+* :class:`SimpleTALTemplate` is now deprecating. There seems to be no demand.
 
 Release 0.10
 ==============
@@ -74,7 +95,7 @@ This release is mostly backward compatible, but some APIs are marked deprecated 
 Release 0.8
 ============
 
-.. rubric:: API changes 
+.. rubric:: API changes
 
 These changes may break compatibility with previous versions.
 
@@ -89,16 +110,18 @@ These changes may break compatibility with previous versions.
 * The :class:`SimpleTemplate` engine returns unicode strings instead of lists of byte strings.
 * ``bottle.optimize()`` and the automatic route optimization is obsolete.
 * Some functions and attributes were renamed:
+
   * :attr:`Request._environ` is now :attr:`Request.environ`
   * :attr:`Response.header` is now :attr:`Response.headers`
   * :func:`default_app` is obsolete. Use :func:`app` instead.
+
 * The default :func:`redirect` code changed from 307 to 303.
 * Removed support for ``@default``. Use ``@error(404)`` instead.
 
 .. rubric:: New features
 
 
-This is an incomplete list of new features and improved functionality. 
+This is an incomplete list of new features and improved functionality.
 
 * The :class:`Request` object got new properties: :attr:`Request.body`, :attr:`Request.auth`, :attr:`Request.url`, :attr:`Request.header`, :attr:`Request.forms`, :attr:`Request.files`.
 * The :meth:`Response.set_cookie` and :meth:`Request.get_cookie` methods are now able to encode and decode python objects. This is called a *secure cookie* because the encoded values are signed and protected from changes on client side. All pickle-able data structures are allowed.
@@ -110,69 +133,9 @@ This is an incomplete list of new features and improved functionality.
 * Lots of non-critical bugfixes.
 
 
+
+============
 Contributors
 ============
 
-Thanks to all the people who found bugs, sent patches, spread the word, helped each other on the mailing-list and made this project possible. You are awesome :) Really, you are.
-
-I hope the following (alphabetically sorted) list is complete. If you miss your name on that list (or want your name removed) please :doc:`tell me <contact>`.
-
-  * acasajus
-  * Adam R. Smith
-  * Alexey Borzenkov
-  * Alexis Daboville
-  * Anton I. Sipos
-  * Anton Kolechkin
-  * apexi200sx
-  * apheage
-  * BillMa
-  * Brad Greenlee
-  * Brandon Gilmore
-  * Branko Vukelic
-  * Brian Sierakowski
-  * Brian Wickman
-  * Carl Scharenberg
-  * Damien Degois
-  * David Buxton
-  * Duane Johnson
-  * fcamel
-  * Frank Murphy
-  * Frederic Junod
-  * goldfaber3012
-  * Greg Milby
-  * gstein
-  * Ian Davis
-  * Itamar Nabriski
-  * Iuri de Silvio
-  * Jaimie Murdock
-  * Jeff Nichols
-  * Jeremy Kelley
-  * joegester
-  * Johannes Krampf
-  * Jonas Haag
-  * Joshua Roesslein
-  * Karl
-  * Kraken
-  * Kyle Fritz
-  * m35
-  * Marcos Neves
-  * masklinn
-  * Michael Labbe
-  * Michael Soulier
-  * `reddit <http://reddit.com/r/python>`_
-  * Robert Rollins
-  * rogererens
-  * rwxrwx
-  * Santiago Gala
-  * Sean M. Collins
-  * Sean M. Collins
-  * Sebastian Wollrath
-  * Seth
-  * Sigurd Høgsbro
-  * Stuart Rackham
-  * Sun Ning
-  * Tomás A. Schertel
-  * Tristan Zajonc
-  * voltron
-  * Wieland Hoffmann
-  * zombat
+.. include:: ../AUTHORS

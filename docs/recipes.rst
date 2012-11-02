@@ -55,7 +55,57 @@ Bottle catches all Exceptions raised in your app code to prevent your WSGI serve
 
 Now, bottle only catches its own exceptions (:exc:`HTTPError`, :exc:`HTTPResponse` and :exc:`BottleException`) and your middleware can handle the rest.
 
-The werkzeug_ and paste_ libraries both ship with very powerfull debugging WSGI middleware. Look at :class:`werkzeug.debug.DebuggedApplication` for werkzeug_ and :class:`paste.evalexception.middleware.EvalException` for paste_. They both allow you do inspect the stack and even execute python code within the stack context, so **do not use them in production**.
+The werkzeug_ and paste_ libraries both ship with very powerful debugging WSGI middleware. Look at :class:`werkzeug.debug.DebuggedApplication` for werkzeug_ and :class:`paste.evalexception.middleware.EvalException` for paste_. They both allow you do inspect the stack and even execute python code within the stack context, so **do not use them in production**.
+
+
+Unit-Testing Bottle Applications
+--------------------------------------------------------------------------------
+
+Unit-testing is usually performed against methods defined in your web application without running a WSGI environment.
+
+A simple example using `Nose <http://readthedocs.org/docs/nose>`_::
+
+    import bottle
+    
+    @bottle.route('/')
+    def index():
+        return 'Hi!'
+
+    if __name__ == '__main__':
+        bottle.run()
+
+Test script::
+
+    import mywebapp
+    
+    def test_webapp_index():
+        assert mywebapp.index() == 'Hi!'
+
+In the example the Bottle route() method is never executed - only index() is tested.
+
+
+Functional Testing Bottle Applications
+--------------------------------------------------------------------------------
+
+Any HTTP-based testing system can be used with a running WSGI server, but some testing frameworks work more intimately with WSGI, and provide the ability the call WSGI applications in a controlled environment, with tracebacks and full use of debugging tools. `Testing tools for WSGI <http://www.wsgi.org/en/latest/testing.html>`_ is a good starting point.
+
+Example using `WebTest <http://webtest.pythonpaste.org/>`_ and `Nose <http://readthedocs.org/docs/nose>`_::
+
+    from webtest import TestApp
+    import mywebapp
+
+    def test_functional_login_logout():
+        app = TestApp(mywebapp.app)
+        
+        app.post('/login', {'user': 'foo', 'pass': 'bar'}) # log in and get a cookie
+
+        assert app.get('/admin').status == '200 OK'        # fetch a page successfully
+
+        app.get('/logout')                                 # log out
+        app.reset()                                        # drop the cookie
+
+        # fetch the same page, unsuccessfully
+        assert app.get('/admin').status == '401 Unauthorized'
 
 
 Embedding other WSGI Apps
@@ -153,7 +203,7 @@ Supporting Gzip compression is not a straightforward proposition, due to a numbe
 * Make sure the cache does not get to big.
 * Do not cache small files because a disk seek would take longer than on-the-fly compression.
 
-Because of these requirements, it is the reccomendation of the Bottle project that Gzip compression is best handled by the WSGI server Bottle runs on top of. WSGI servers such as cherrypy_ provide a GzipFilter_ middleware that can be used to accomplish this.
+Because of these requirements, it is the recommendation of the Bottle project that Gzip compression is best handled by the WSGI server Bottle runs on top of. WSGI servers such as cherrypy_ provide a GzipFilter_ middleware that can be used to accomplish this.
 
 
 Using the hooks plugin
