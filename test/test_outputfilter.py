@@ -3,7 +3,8 @@
 
 import unittest
 import bottle
-from tools import ServerTestBase, tob, tobs, warn
+from bottle import tob, touni
+from tools import ServerTestBase, tobs, warn
 
 class TestOutputFilter(ServerTestBase):
     ''' Tests for WSGI functionality, routing and output casting (decorators) '''
@@ -48,23 +49,23 @@ class TestOutputFilter(ServerTestBase):
         self.assertBody('test')
 
     def test_unicode(self):
-        self.app.route('/')(lambda: u'äöüß')
-        self.assertBody(u'äöüß'.encode('utf8'))
+        self.app.route('/')(lambda: touni('äöüß'))
+        self.assertBody(touni('äöüß').encode('utf8'))
 
-        self.app.route('/')(lambda: [u'äö',u'üß'])
-        self.assertBody(u'äöüß'.encode('utf8'))
+        self.app.route('/')(lambda: [touni('äö'), touni('üß')])
+        self.assertBody(touni('äöüß').encode('utf8'))
 
         @self.app.route('/')
         def test5():
             bottle.response.content_type='text/html; charset=iso-8859-15'
-            return u'äöüß'
-        self.assertBody(u'äöüß'.encode('iso-8859-15'))
+            return touni('äöüß')
+        self.assertBody(touni('äöüß').encode('iso-8859-15'))
 
         @self.app.route('/')
         def test5():
             bottle.response.content_type='text/html'
-            return u'äöüß'
-        self.assertBody(u'äöüß'.encode('utf8'))
+            return touni('äöüß')
+        self.assertBody(touni('äöüß').encode('utf8'))
 
     def test_json(self):
         self.app.route('/')(lambda: {'a': 1})
@@ -93,7 +94,7 @@ class TestOutputFilter(ServerTestBase):
             yield 'foo'
         self.assertBody('foo')
         self.assertHeader('Test-Header', 'test')
-        
+
     def test_empty_generator_callback(self):
         @self.app.route('/')
         def test():
@@ -101,7 +102,7 @@ class TestOutputFilter(ServerTestBase):
             bottle.response.headers['Test-Header'] = 'test'
         self.assertBody('')
         self.assertHeader('Test-Header', 'test')
-        
+
     def test_error_in_generator_callback(self):
         @self.app.route('/')
         def test():
@@ -112,7 +113,7 @@ class TestOutputFilter(ServerTestBase):
     def test_fatal_error_in_generator_callback(self):
         @self.app.route('/')
         def test():
-            yield 
+            yield
             raise KeyboardInterrupt()
         self.assertRaises(KeyboardInterrupt, self.assertStatus, 500)
 
@@ -122,33 +123,32 @@ class TestOutputFilter(ServerTestBase):
             yield
             bottle.abort(404, 'teststring')
         self.assertInBody('teststring')
-        self.assertInBody('Error 404: Not Found')
+        self.assertInBody('404 Not Found')
         self.assertStatus(404)
 
     def test_httpresponse_in_generator_callback(self):
         @self.app.route('/')
         def test():
             yield bottle.HTTPResponse('test')
-        self.assertBody('test')        
-        
+        self.assertBody('test')
+
     def test_unicode_generator_callback(self):
         @self.app.route('/')
         def test():
-            yield u'äöüß'
-        self.assertBody(u'äöüß'.encode('utf8')) 
-        
+            yield touni('äöüß')
+        self.assertBody(touni('äöüß').encode('utf8'))
+
     def test_invalid_generator_callback(self):
         @self.app.route('/')
         def test():
             yield 1234
         self.assertStatus(500)
         self.assertInBody('Unsupported response type')
-        
+
     def test_cookie(self):
         """ WSGI: Cookies """
         @bottle.route('/cookie')
         def test():
-            bottle.response.COOKIES['a']="a"
             bottle.response.set_cookie('b', 'b')
             bottle.response.set_cookie('c', 'c', path='/')
             return 'hello'
@@ -157,7 +157,6 @@ class TestOutputFilter(ServerTestBase):
         except:
             c = self.urlopen('/cookie')['header'].get('Set-Cookie', '').split(',')
             c = [x.strip() for x in c]
-        self.assertTrue('a=a' in c)
         self.assertTrue('b=b' in c)
         self.assertTrue('c=c; Path=/' in c)
 

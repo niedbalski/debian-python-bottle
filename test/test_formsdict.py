@@ -14,7 +14,7 @@ class TestFormsDict(unittest.TestCase):
     def test_attr_missing(self):
         """ FomsDict.attribute returs u'' on missing keys. """
         d = FormsDict()
-        self.assertEqual(u'', d.missing)
+        self.assertEqual(touni(''), d.missing)
 
     def test_attr_unicode_error(self):
         """ FomsDict.attribute returs u'' on UnicodeError. """
@@ -23,7 +23,13 @@ class TestFormsDict(unittest.TestCase):
         d.input_encoding = 'latin1'
         self.assertEqual(touni('öäüß'), d.latin)
 
-   
+    def test_decode_method(self):
+        d = FormsDict(py2=tob('瓶'), py3=tob('瓶').decode('latin1'))
+        d = d.decode()
+        self.assertFalse(d.recode_unicode)
+        self.assertTrue(hasattr(list(d.keys())[0], 'encode'))
+        self.assertTrue(hasattr(list(d.values())[0], 'encode'))
+
 if __name__ == '__main__': #pragma: no cover
     unittest.main()
 

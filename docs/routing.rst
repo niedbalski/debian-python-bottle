@@ -11,7 +11,7 @@ The :class:`Router` distinguishes between two basic types of routes: **static ro
 
 .. versionchanged:: 0.10
 
-The simplest form of a wildcard consists of a name enclosed in angle brackets (e.g. ``<name>``). The name should be unique for a given route and form a valid python identifier (alphanumeric, staring with a letter). This is because wildcards are used as keyword arguments for the request callback later.
+The simplest form of a wildcard consists of a name enclosed in angle brackets (e.g. ``<name>``). The name should be unique for a given route and form a valid python identifier (alphanumeric, starting with a letter). This is because wildcards are used as keyword arguments for the request callback later.
 
 Each wildcard matches one or more characters, but stops at the first slash (``/``). This equals a regular expression of ``[^/]+`` and ensures that only one path segment is matched and routes with more than one wildcard stay unambiguous.
 
@@ -57,7 +57,7 @@ You can add your own filters to the router. All you need is a function that retu
         def to_url(numbers):
             return delimiter.join(map(str, numbers))
         
-        return regexp, to_python, to_user
+        return regexp, to_python, to_url
 
     app.router.add_filter('list', list_filter)
 
@@ -83,7 +83,7 @@ Old Syntax          New Syntax
 ``:##``             ``<:re>``
 =================== ====================
 
-Try to avoid the old syntax in future projects if you can. It is not deprecated for now, but will be eventually.
+Try to avoid the old syntax in future projects if you can. It is not currently deprecated, but will be eventually.
 
 
 Routing Order
@@ -99,13 +99,31 @@ In a second step, the request method is checked. If no exact match is found, and
 
 Here is an example where this might bite you::
 
-    @route('/:action/:name', method='GET')
-    @route('/save/:name', method='POST')
+    @route('/<action>/<name>', method='GET')
+    @route('/save/<name>', method='POST')
 
 The second route will never hit. Even POST requests don't arrive at the second route because the request method is checked in a separate step. The router stops at the first route which matches the request path, then checks for a valid request method, can't find one and raises a 405 error.
 
 Sounds complicated, and it is. That is the price for performance. It is best to avoid ambiguous routes at all and choose unique prefixes for each route. This implementation detail may change in the future, though. We are working on it.
 
 
-        
+Explicit routing configuration
+--------------------------------------------------------------------------------
+
+Route decorator can also be directly called as method. This way provides flexibility in complex setups, allowing you to directly control, when and how routing configuration done.
+
+Here is a basic example of explicit routing configuration for default bottle application::
+
+    def setup_routing():
+        bottle.route('/', method='GET', index)
+        bottle.route('/edit', method=['GET', 'POST'], edit)
+
+In fact, any :class:`Bottle` instance routing can be configured same way::
+
+    def setup_routing(app):
+        app.route('/new', method=['GET', 'POST'], form_new)
+        app.route('/edit', method=['GET', 'POST'], form_edit)
+
+    app = Bottle()
+    setup_routing(app)
 

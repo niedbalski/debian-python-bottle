@@ -250,21 +250,21 @@ The code needs to be extended to::
     @route('/new', method='GET')
     def new_item():
 
-    if request.GET.get('save','').strip():
+        if request.GET.get('save','').strip():
 
-        new = request.GET.get('task', '').strip()
-        conn = sqlite3.connect('todo.db')
-        c = conn.cursor()
+            new = request.GET.get('task', '').strip()
+            conn = sqlite3.connect('todo.db')
+            c = conn.cursor()
 
-        c.execute("INSERT INTO todo (task,status) VALUES (?,?)", (new,1))
-        new_id = c.lastrowid
+            c.execute("INSERT INTO todo (task,status) VALUES (?,?)", (new,1))
+            new_id = c.lastrowid
 
-        conn.commit()
-        c.close()
+            conn.commit()
+            c.close()
 
-        return '<p>The new task was inserted into the database, the ID is %s</p>' % new_id
-    else:
-        return template('new_task.tpl')
+            return '<p>The new task was inserted into the database, the ID is %s</p>' % new_id
+        else:
+            return template('new_task.tpl')
 
 
 ``new_task.tpl`` looks like this::
@@ -506,7 +506,7 @@ This works exactly the same way with ``FlupServer``, ``CherryPyServer`` and ``Fa
 
 Maybe you already have an Apache_ or you want to run a Bottle-based application large scale - then it is time to think about Apache with mod_wsgi_.
 
-We assume that your Apache server is up and running and mod_wsgi is working fine as well. On a lot of Linux distributions, mod_wsgi can be installed via the package management easily.
+We assume that your Apache server is up and running and mod_wsgi is working fine as well. On a lot of Linux distributions, mod_wsgi can be easily installed via whatever package management system is in use.
 
 Bottle brings an adapter for mod_wsgi with it, so serving your application is an easy task.
 

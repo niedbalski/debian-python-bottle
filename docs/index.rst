@@ -24,22 +24,22 @@ Bottle is a fast, simple and lightweight WSGI_ micro web-framework for Python_. 
 
 * **Routing:** Requests to function-call mapping with support for clean and  dynamic URLs.
 * **Templates:** Fast and pythonic :ref:`built-in template engine <tutorial-templates>` and support for mako_, jinja2_ and cheetah_ templates.
-* **Utilities:** Convenient access to form data, file uploads, cookies, headers and other HTTP related metadata.
+* **Utilities:** Convenient access to form data, file uploads, cookies, headers and other HTTP-related metadata.
 * **Server:** Built-in HTTP development server and support for paste_, fapws3_, bjoern_, `Google App Engine <http://code.google.com/intl/en-US/appengine/>`_, cherrypy_ or any other WSGI_ capable HTTP server.
 
 .. rubric:: Example: "Hello World" in a bottle
 
 ::
 
-  from bottle import route, run
+  from bottle import route, run, template
 
   @route('/hello/:name')
   def index(name='World'):
-      return '<b>Hello %s!</b>' % name
+      return template('<b>Hello {{name}}</b>!', name=name)
 
   run(host='localhost', port=8080)
 
-Run this script or paste it into a python console, then point your browser to `<http://localhost:8080/hello/world>`_. Thats it.
+Run this script or paste it into a Python console, then point your browser to `<http://localhost:8080/hello/world>`_. That's it.
 
 .. rubric:: Download and Install
 
@@ -47,7 +47,7 @@ Run this script or paste it into a python console, then point your browser to `<
 
 .. __: https://github.com/defnull/bottle/raw/master/bottle.py
 
-Install the latest stable release via PyPi_ (``easy_install -U bottle``) or download `bottle.py`__ (unstable) into your project directory. There are no hard [1]_ dependencies other than the Python standard library. Bottle runs with **Python 2.5+ and 3.x** (using 2to3)
+Install the latest stable release via PyPi_ (``easy_install -U bottle``) or download `bottle.py`__ (unstable) into your project directory. There are no hard [1]_ dependencies other than the Python standard library. Bottle runs with **Python 2.5+ and 3.x**.
 
 User's Guide
 ===============
@@ -99,7 +99,7 @@ License
 
 Code and documentation are available according to the MIT License:
 
-.. include:: ../LICENSE.txt
+.. include:: ../LICENSE
   :literal:
 
 The Bottle logo however is *NOT* covered by that license. It is allowed to

@@ -1,12 +1,6 @@
-import unittest
-import sys, os.path
 import bottle
-import urllib2
-from StringIO import StringIO
-import thread
-import time
 from tools import ServerTestBase
-from bottle import tob, touni, tonat, Bottle
+from bottle import Bottle
 
 class TestAppMounting(ServerTestBase):
     def setUp(self):
@@ -25,6 +19,15 @@ class TestAppMounting(ServerTestBase):
         self.assertBody('foo', '/test/')
         self.assertStatus(200, '/test/test/bar')
         self.assertBody('bar', '/test/test/bar')
+
+    def test_mount_meta(self):
+        self.app.mount('/test/', self.subapp)
+        self.assertEqual(
+            self.app.routes[0].config.mountpoint['prefix'],
+            '/test/')
+        self.assertEqual(
+            self.app.routes[0].config.mountpoint['target'],
+            self.subapp)
 
     def test_no_slash_prefix(self):
         self.app.mount('/test', self.subapp)
@@ -58,6 +61,24 @@ class TestAppMounting(ServerTestBase):
         self.assertBody('WSGI /', '/test/')
         self.assertHeader('X-Test', 'WSGI', '/test/')
         self.assertBody('WSGI /test/bar', '/test/test/bar')
+
+
+class TestAppMerging(ServerTestBase):
+    def setUp(self):
+        ServerTestBase.setUp(self)
+        self.subapp = bottle.Bottle()
+        @self.subapp.route('/')
+        @self.subapp.route('/test/:test')
+        def test(test='foo'):
+            return test
+
+    def test_merge(self):
+        self.app.merge(self.subapp)
+        self.assertStatus(200, '/')
+        self.assertBody('foo', '/')
+        self.assertStatus(200, '/test/bar')
+        self.assertBody('bar', '/test/bar')
+
 
 
 if __name__ == '__main__': #pragma: no cover

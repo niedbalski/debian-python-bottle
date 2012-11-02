@@ -2,12 +2,8 @@
 import unittest
 import sys, os.path
 import bottle
-import urllib2
-from StringIO import StringIO
-import thread
-import time
 from tools import ServerTestBase
-from bottle import tob, touni, tonat
+from bottle import tob
 
 class TestWsgi(ServerTestBase):
     ''' Tests for WSGI functionality, routing and output casting (decorators) '''
@@ -85,7 +81,7 @@ class TestWsgi(ServerTestBase):
         """ WSGI: Exceptions within handler code (HTTP 500) """
         @bottle.route('/my/:string')
         def test(string): return string
-        self.assertBody(tob(u'urf8-öäü'), '/my/urf8-öäü')
+        self.assertBody(tob('urf8-öäü'), '/my/urf8-öäü')
 
     def test_utf8_404(self):
         self.assertStatus(404, '/not-found/urf8-öäü')
@@ -94,12 +90,12 @@ class TestWsgi(ServerTestBase):
         """ WSGI: abort(401, '') (HTTP 401) """
         @bottle.route('/')
         def test(): bottle.abort(401)
-        self.assertStatus(401,'/')
+        self.assertStatus(401, '/')
         @bottle.error(401)
         def err(e):
             bottle.response.status = 200
             return str(type(e))
-        self.assertStatus(200,'/')
+        self.assertStatus(200, '/')
         self.assertBody("<class 'bottle.HTTPError'>",'/')
 
     def test_303(self):
@@ -135,7 +131,6 @@ class TestWsgi(ServerTestBase):
         """ WSGI: Cookies """
         @bottle.route('/cookie')
         def test():
-            bottle.response.COOKIES['a']="a"
             bottle.response.set_cookie('b', 'b')
             bottle.response.set_cookie('c', 'c', path='/')
             return 'hello'
@@ -144,7 +139,6 @@ class TestWsgi(ServerTestBase):
         except:
             c = self.urlopen('/cookie')['header'].get('Set-Cookie', '').split(',')
             c = [x.strip() for x in c]
-        self.assertTrue('a=a' in c)
         self.assertTrue('b=b' in c)
         self.assertTrue('c=c; Path=/' in c)
 
@@ -284,19 +278,8 @@ class TestDecorators(ServerTestBase):
         def test():
             return bottle.HTTPError(401, 'The cake is a lie!')
         self.assertInBody('The cake is a lie!', '/tpl')
-        self.assertInBody('401: Unauthorized', '/tpl')
+        self.assertInBody('401 Unauthorized', '/tpl')
         self.assertStatus(401, '/tpl')
-
-    def test_validate(self):
-        """ WSGI: Test validate-decorator"""
-        @bottle.route('/:var')
-        @bottle.route('/')
-        @bottle.validate(var=int)
-        def test(var): return 'x' * var
-        self.assertStatus(403,'/noint')
-        self.assertStatus(403,'/')
-        self.assertStatus(200,'/5')
-        self.assertBody('xxx', '/3')
 
     def test_truncate_body(self):
         """ WSGI: Some HTTP status codes must not be used with a response-body """
