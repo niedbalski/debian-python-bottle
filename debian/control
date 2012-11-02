@@ -3,7 +3,6 @@ Section: python
 Priority: optional
 Maintainer: David Paleino <dapal@debian.org>
 Uploaders: Federico Ceratto <federico.ceratto@gmail.com>
-DM-Upload-Allowed: yes
 Build-Depends:
  debhelper (>= 9~)
 Build-Depends-Indep:
@@ -11,13 +10,19 @@ Build-Depends-Indep:
  , python-sphinx
 # needed for build-time tests
  , python-cherrypy
- , python-gevent
- , python-mako
  , python-eventlet
+ , python-flup
+ , python-gevent
+ , python-jinja2
+ , python-mako
+ , python-nose
  , python-paste
+ , python-simpletal
+ , python-tornado
+ , python-twisted
+ , python-werkzeug
 # , gunicorn
-# , python-tornado
-Standards-Version: 3.9.3
+Standards-Version: 3.9.4
 Homepage: http://bottlepy.org
 X-Python-Version: >= 2.5
 Vcs-Git: git://git.debian.org/git/collab-maint/python-bottle.git
