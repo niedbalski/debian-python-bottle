@@ -1,3 +1,9 @@
+python-bottle (0.11.6-1) UNRELEASED; urgency=low
+
+  * d/changelog: New upstream release 0.11.6
+
+ -- Federico Ceratto <federico.ceratto@gmail.com>  Mon, 06 May 2013 20:42:23 +0100
+
 python-bottle (0.11.3-1) experimental; urgency=low
 
   * New upstream version
