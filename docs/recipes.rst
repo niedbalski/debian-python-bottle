@@ -116,7 +116,7 @@ This is not the recommend way (you should use a middleware in front of bottle to
     from bottle import request, response, route
     subproject = SomeWSGIApplication()
 
-    @route('/subproject/:subpath#.*#', method='ALL')
+    @route('/subproject/:subpath#.*#', method='ANY')
     def call_wsgi(subpath):
         new_environ = request.environ.copy()
         new_environ['SCRIPT_NAME'] = new_environ.get('SCRIPT_NAME','') + '/subproject'
@@ -227,7 +227,7 @@ decorator and setup a callback function::
     def say_bar():
         return {'type': 'friendly', 'content': 'Hi!'}
 
-You can also use the ``before_callback`` to take an action before
+You can also use the ``before_request`` to take an action before
 every function gets called.
 
 

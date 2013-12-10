@@ -5,6 +5,19 @@
 Release Notes and Changelog
 ===========================
 
+
+
+Release 0.12
+==============
+
+.. warning: Not released yet.
+
+* New SimpleTemplate parser implementation
+  * Support for multi-line code blocks (`<% ... %>`).
+  * The keywords `include` and `rebase` are functions now and can accept variable template names.
+* The new :meth:`BaseRequest.route` property returns the :class:`Route` that matched the request.
+* Removed the ``BaseRequest.MAX_PARAMS`` limit. The hash collision bug in CPythons dict() implementation was fixed over a year ago. If you are still using Python 2.5 in production, consider upgrading or at least make sure that you get security fixed from your distributor.
+
 Release 0.11
 ==============
 
@@ -52,7 +65,7 @@ Release 0.10
   * A new route syntax (e.g. ``/object/<id:int>``) and support for route wildcard filters.
   * Four new wildcard filters: `int`, `float`, `path` and `re`.
 
-* Oher changes
+* Other changes
 
   * Added command line interface to load applications and start servers.
   * Introduced a :class:`ConfigDict` that makes accessing configuration a lot easier (attribute access and auto-expanding namespaces).
