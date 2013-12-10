@@ -87,6 +87,23 @@ class TestOutputFilter(ServerTestBase):
         except ImportError:
             warn("Skipping JSON tests.")
 
+    def test_json_HTTPResponse(self):
+        self.app.route('/')(lambda: bottle.HTTPResponse({'a': 1}, 500))
+        try:
+            self.assertBody(bottle.json_dumps({'a': 1}))
+            self.assertHeader('Content-Type','application/json')
+        except ImportError:
+            warn("Skipping JSON tests.")
+
+    def test_json_HTTPError(self):
+        self.app.error(400)(lambda e: e.body)
+        self.app.route('/')(lambda: bottle.HTTPError(400, {'a': 1}))
+        try:
+            self.assertBody(bottle.json_dumps({'a': 1}))
+            self.assertHeader('Content-Type','application/json')
+        except ImportError:
+            warn("Skipping JSON tests.")
+
     def test_generator_callback(self):
         @self.app.route('/')
         def test():
@@ -144,6 +161,23 @@ class TestOutputFilter(ServerTestBase):
             yield 1234
         self.assertStatus(500)
         self.assertInBody('Unsupported response type')
+
+    def test_iterator_with_close(self):
+        class MyIter(object):
+            def __init__(self, data):
+                self.data = data
+                self.closed = False
+            def close(self):    self.closed = True
+            def __iter__(self): return iter(self.data)
+
+        byte_iter = MyIter([tob('abc'), tob('def')])
+        unicode_iter = MyIter([touni('abc'), touni('def')])
+
+        for test_iter in (byte_iter, unicode_iter):
+            @self.app.route('/')
+            def test(): return test_iter
+            self.assertInBody('abcdef')
+            self.assertTrue(byte_iter.closed)
 
     def test_cookie(self):
         """ WSGI: Cookies """
