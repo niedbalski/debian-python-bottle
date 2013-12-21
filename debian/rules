@@ -1,43 +1,22 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
+export PYBUILD_NAME=bottle
 
 export DH_VERBOSE=1
 
-override_dh_auto_test:
-ifeq ($(filter nocheck,$(DEB_BUILD_OPTIONS)),)
-	for python in $(shell pyversions -r); do \
-		echo "Running unit tests with $$python"; \
-		$$python test/testall.py; \
-	done
-endif
+%:
+	dh $@ --with python2,python3,sphinxdoc --buildsystem=pybuild --test-tox
 
 override_dh_auto_build:
-	dh_auto_build -Spython_distutils
-	for i in plugins/*; do \
-		dh_auto_build -Spython_distutils -D$$i -Bbuild/; \
-	done
-	$(MAKE) -C docs dirhtml
-
-override_dh_auto_install:
-	dh_auto_install -Spython_distutils
-	rm -rf $(CURDIR)/debian/python-bottle-doc/usr/share/doc/python-bottle-doc/api/_images/myface_small.png
-
-override_dh_installdocs:
-	dh_installdocs
-	mv $(CURDIR)/debian/python-bottle-doc/usr/share/doc/python-bottle-doc/dirhtml/ \
-	   $(CURDIR)/debian/python-bottle-doc/usr/share/doc/python-bottle-doc/api/
-
-override_dh_compress:
-	dh_compress -Xpython-bottle-doc/api
-
-override_dh_auto_clean:
-	dh_auto_clean -Spython_distutils
-	$(MAKE) -C docs clean
+	dh_auto_build
+	PYTHONPATH=. http_proxy='http://127.0.0.1:9/' sphinx-build -N -bhtml docs/ build/html
+	PYTHONPATH=. http_proxy='http://127.0.0.1:9/' sphinx-build -N -bman docs/ build/man
+	rm -rf ./build/html/.doctrees
 
 override_dh_installchangelogs:
 	dh_installchangelogs docs/changelog.rst
 
-
-%:
-	dh $@ \
-		--with python2
+override_dh_auto_test:
+	#PYBUILD_SYSTEM=custom PYBUILD_TEST_ARGS="nosetests" dh_auto_test
+	#PYBUILD_SYSTEM=custom PYBUILD_TEST_ARGS="{interpreter} test/testall.py" dh_auto_test
+	python test/testall.py
