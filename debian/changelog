@@ -1,8 +1,9 @@
-python-bottle (0.12.0-1) UNRELEASED; urgency=medium
+python-bottle (0.12.0-1) unstable; urgency=medium
 
+  [ Federico Ceratto ]
   * New upstream version
 
- -- Federico Ceratto <federico.ceratto@gmail.com>  Tue, 10 Dec 2013 19:43:34 +0000
+ -- David Paleino <dapal@debian.org>  Mon, 06 Jan 2014 18:44:50 +0100
 
 python-bottle (0.11.6-1) unstable; urgency=low
 
