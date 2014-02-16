@@ -17,6 +17,8 @@ override_dh_installchangelogs:
 	dh_installchangelogs docs/changelog.rst
 
 override_dh_auto_test:
+ifeq (,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
 	#PYBUILD_SYSTEM=custom PYBUILD_TEST_ARGS="nosetests" dh_auto_test
 	#PYBUILD_SYSTEM=custom PYBUILD_TEST_ARGS="{interpreter} test/testall.py" dh_auto_test
 	python test/testall.py
+endif
