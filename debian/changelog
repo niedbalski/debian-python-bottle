@@ -1,8 +1,13 @@
-python-bottle (0.12.3-1) UNRELEASED; urgency=medium
+python-bottle (0.12.3-1) unstable; urgency=medium
 
+  [ Federico Ceratto ]
   * New upstream version
+  * Standard-Version bumped to 3.9.5
 
- -- Federico Ceratto <federico.ceratto@gmail.com>  Sun, 16 Feb 2014 20:53:29 +0000
+  [ Daniel Schepler ]
+  * DEB_BUILD_OPTIONS nocheck support added (Closes: #739102)
+
+ -- Federico Ceratto <federico.ceratto@gmail.com>  Sun, 16 Feb 2014 22:08:50 +0000
 
 python-bottle (0.12.0-1) unstable; urgency=medium
 
