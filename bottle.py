@@ -16,7 +16,7 @@ License: MIT (see LICENSE for details)
 from __future__ import with_statement
 
 __author__ = 'Marcel Hellkamp'
-__version__ = '0.12.0'
+__version__ = '0.12.3'
 __license__ = 'MIT'
 
 # The gevent server adapter needs to patch some modules before they are imported
@@ -42,6 +42,8 @@ from datetime import date as datedate, datetime, timedelta
 from tempfile import TemporaryFile
 from traceback import format_exc, print_exc
 from inspect import getargspec
+from unicodedata import normalize
+
 
 try: from simplejson import dumps as json_dumps, loads as json_lds
 except ImportError: # pragma: no cover
@@ -110,6 +112,7 @@ else: # 2.x
         bytes = str
     else: # 2.6, 2.7
         from collections import MutableMapping as DictMixin
+    unicode = unicode
     json_loads = json_lds
     eval(compile('def _raise(*a): raise a[0], a[1], a[2]', '<py3fix>', 'exec'))
 
@@ -410,7 +413,10 @@ class Router(object):
         verb = environ['REQUEST_METHOD'].upper()
         path = environ['PATH_INFO'] or '/'
         target = None
-        methods = [verb, 'GET', 'ANY'] if verb == 'HEAD' else [verb, 'ANY']
+        if verb == 'HEAD':
+            methods = ['PROXY', verb, 'GET', 'ANY']
+        else:
+            methods = ['PROXY', verb, 'ANY']
 
         for method in methods:
             if method in self.static and path in self.static[method]:
@@ -681,7 +687,7 @@ class Bottle(object):
                 request.path_shift(-path_depth)
 
         options.setdefault('skip', True)
-        options.setdefault('method', 'ANY')
+        options.setdefault('method', 'PROXY')
         options.setdefault('mountpoint', {'prefix': prefix, 'target': app})
         options['callback'] = mountpoint_wrapper
 
@@ -1215,10 +1221,10 @@ class BaseRequest(object):
             if key in self.environ: safe_env[key] = self.environ[key]
         args = dict(fp=self.body, environ=safe_env, keep_blank_values=True)
         if py31:
-            args['fp'] = NCTextIOWrapper(args['fp'], encoding='latin1',
+            args['fp'] = NCTextIOWrapper(args['fp'], encoding='utf8',
                                          newline='\n')
         elif py3k:
-            args['encoding'] = 'latin1'
+            args['encoding'] = 'utf8'
         data = cgi.FieldStorage(**args)
         data = data.list or []
         for item in data:
@@ -1649,7 +1655,7 @@ def local_property(name=None):
 
 class LocalRequest(BaseRequest):
     ''' A thread-local subclass of :class:`BaseRequest` with a different
-        set of attribues for each thread. There is usually only one global
+        set of attributes for each thread. There is usually only one global
         instance of this class (:data:`request`). If accessed during a
         request/response cycle, this instance always refers to the *current*
         request (even on a multithreaded server). '''
@@ -1659,7 +1665,7 @@ class LocalRequest(BaseRequest):
 
 class LocalResponse(BaseResponse):
     ''' A thread-local subclass of :class:`BaseResponse` with a different
-        set of attribues for each thread. There is usually only one global
+        set of attributes for each thread. There is usually only one global
         instance of this class (:data:`response`). Its attributes are used
         to build the HTTP response at the end of the request/response cycle.
     '''
@@ -2254,19 +2260,21 @@ class FileUpload(object):
     @cached_property
     def filename(self):
         ''' Name of the file on the client file system, but normalized to ensure
-            file system compatibility (lowercase, no whitespace, no path
-            separators, no unsafe characters, ASCII only). An empty filename
-            is returned as 'empty'.
+            file system compatibility. An empty filename is returned as 'empty'.
+            
+            Only ASCII letters, digits, dashes, underscores and dots are
+            allowed in the final filename. Accents are removed, if possible.
+            Whitespace is replaced by a single dash. Leading or tailing dots
+            or dashes are removed. The filename is limited to 255 characters.
         '''
-        from unicodedata import normalize #TODO: Module level import?
         fname = self.raw_filename
-        if isinstance(fname, unicode):
-            fname = normalize('NFKD', fname).encode('ASCII', 'ignore')
-        fname = fname.decode('ASCII', 'ignore')
+        if not isinstance(fname, unicode):
+            fname = fname.decode('utf8', 'ignore')
+        fname = normalize('NFKD', fname).encode('ASCII', 'ignore').decode('ASCII')
         fname = os.path.basename(fname.replace('\\', os.path.sep))
-        fname = re.sub(r'[^a-zA-Z0-9-_.\s]', '', fname).strip().lower()
-        fname = re.sub(r'[-\s]+', '-', fname.strip('.').strip())
-        return fname or 'empty'
+        fname = re.sub(r'[^a-zA-Z0-9-_.\s]', '', fname).strip()
+        fname = re.sub(r'[-\s]+', '-', fname).strip('.-')
+        return fname[:255] or 'empty'
 
     def _copy_file(self, fp, chunk_size=2**16):
         read, write, offset = self.file.read, fp.write, self.file.tell()
@@ -2334,7 +2342,7 @@ def _file_iter_range(fp, offset, bytes, maxread=1024*1024):
 
 def static_file(filename, root, mimetype='auto', download=False, charset='UTF-8'):
     """ Open a file in a safe way and return :exc:`HTTPResponse` with status
-        code 200, 305, 401 or 404. The ``Content-Type``, ``Content-Encoding``,
+        code 200, 305, 403 or 404. The ``Content-Type``, ``Content-Encoding``,
         ``Content-Length`` and ``Last-Modified`` headers are set if possible.
         Special support for ``If-Modified-Since``, ``Range`` and ``HEAD``
         requests.
@@ -2512,7 +2520,7 @@ def html_escape(string):
 
 def html_quote(string):
     ''' Escape and quote a string to be used as an HTTP attribute.'''
-    return '"%s"' % html_escape(string).replace('\n','%#10;')\
+    return '"%s"' % html_escape(string).replace('\n','&#10;')\
                     .replace('\r','&#13;').replace('\t','&#9;')
 
 
@@ -3201,7 +3209,7 @@ class CheetahTemplate(BaseTemplate):
 
 
 class Jinja2Template(BaseTemplate):
-    def prepare(self, filters=None, tests=None, **kwargs):
+    def prepare(self, filters=None, tests=None, globals={}, **kwargs):
         from jinja2 import Environment, FunctionLoader
         if 'prefix' in kwargs: # TODO: to be removed after a while
             raise RuntimeError('The keyword argument `prefix` has been removed. '
@@ -3209,6 +3217,7 @@ class Jinja2Template(BaseTemplate):
         self.env = Environment(loader=FunctionLoader(self.loader), **kwargs)
         if filters: self.env.filters.update(filters)
         if tests: self.env.tests.update(tests)
+        if globals: self.env.globals.update(globals)
         if self.source:
             self.tpl = self.env.from_string(self.source)
         else:
@@ -3428,6 +3437,7 @@ class StplParser(object):
             prefix = text[pos:]
             lines = prefix.splitlines(True)
             if lines[-1].endswith('\\\\\n'): lines[-1] = lines[-1][:-3]
+            elif lines[-1].endswith('\\\\\r\n'): lines[-1] = lines[-1][:-4]
             parts.append(nl.join(map(repr, lines)))
         code = '_printlist((%s,))' % ', '.join(parts)
         self.lineno += code.count('\n')+1
