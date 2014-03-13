@@ -1,3 +1,9 @@
+python-bottle (0.12.5-1) unstable; urgency=medium
+
+  * New upstream version
+
+ -- Federico Ceratto <federico.ceratto@gmail.com>  Thu, 13 Mar 2014 00:45:10 +0000
+
 python-bottle (0.12.4-1) unstable; urgency=low
 
   * New upstream version
