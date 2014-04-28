@@ -16,7 +16,7 @@ License: MIT (see LICENSE for details)
 from __future__ import with_statement
 
 __author__ = 'Marcel Hellkamp'
-__version__ = '0.12.5'
+__version__ = '0.12.6'
 __license__ = 'MIT'
 
 # The gevent server adapter needs to patch some modules before they are imported
@@ -1115,7 +1115,8 @@ class BaseRequest(object):
             property holds the parsed content of the request body. Only requests
             smaller than :attr:`MEMFILE_MAX` are processed to avoid memory
             exhaustion. '''
-        if 'application/json' in self.environ.get('CONTENT_TYPE', ''):
+        ctype = self.environ.get('CONTENT_TYPE', '').lower().split(';')[0]
+        if ctype == 'application/json':
             return json_loads(self._get_body_string())
         return None
 
@@ -3340,7 +3341,10 @@ class SimpleTemplate(BaseTemplate):
 
     @cached_property
     def code(self):
-        source = self.source or open(self.filename, 'rb').read()
+        source = self.source
+        if not source:
+            with open(self.filename, 'rb') as f:
+                source = f.read()
         try:
             source, encoding = touni(source), 'utf8'
         except UnicodeError:
