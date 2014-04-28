@@ -1,8 +1,8 @@
-python-bottle (0.12.6-1) UNRELEASED; urgency=low
+python-bottle (0.12.6-1) unstable; urgency=high
 
-  * New upstream release
+  * New upstream release, closes https://github.com/defnull/bottle/issues/616
 
- -- Federico Ceratto <federico.ceratto@gmail.com>  Mon, 28 Apr 2014 23:47:29 +0100
+ -- Federico Ceratto <federico.ceratto@gmail.com>  Tue, 29 Apr 2014 00:18:11 +0100
 
 python-bottle (0.12.5-1) unstable; urgency=medium
 
