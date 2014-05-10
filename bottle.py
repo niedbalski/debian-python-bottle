@@ -16,7 +16,7 @@ License: MIT (see LICENSE for details)
 from __future__ import with_statement
 
 __author__ = 'Marcel Hellkamp'
-__version__ = '0.12.6'
+__version__ = '0.12.7'
 __license__ = 'MIT'
 
 # The gevent server adapter needs to patch some modules before they are imported
@@ -1227,6 +1227,7 @@ class BaseRequest(object):
         elif py3k:
             args['encoding'] = 'utf8'
         data = cgi.FieldStorage(**args)
+        self['_cgi.FieldStorage'] = data #http://bugs.python.org/issue18394#msg207958
         data = data.list or []
         for item in data:
             if item.filename:
